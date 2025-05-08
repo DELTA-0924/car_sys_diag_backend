@@ -23,5 +23,5 @@ def register_middleware(app:FastAPI):
         )
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_host=[""]
+        allowed_hosts=["*"]
         )

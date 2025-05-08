@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter,Depends, UploadFile,status,File,Form
 from src.dependencies import AccessTokenBearer
-from src.schemas import CarModel,CreateCarModel
+from src.schemas import CarModel,CreateCarModel,CreateCarModelSync
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.dbConnect import get_session
 from src.services.car_service import CarService
@@ -28,15 +28,13 @@ async def get_cars(session:AsyncSession = Depends(get_session),
                    token_details = Depends(acces_token_bearer)):
     user_uid = token_details.get("user")["user_uid"]
     cars = await car_service.get_all_cars(user_uid,session)
-    print(cars[0].car_image_path)
-    print(cars[0].uid)
     if cars is not None:
         return cars
     else :
         raise CarNotFound()
 
-@car_router.post("/sync")
-async def synchronize_data_car(data:List[CreateCarModel],
+@car_router.post("/sync",status_code = status.HTTP_201_CREATED)
+async def synchronize_data_car(data:List[CreateCarModelSync],
                                user_details = acces_token_bearer,
                                session: AsyncSession = Depends(get_session)
                                ):

@@ -5,7 +5,7 @@ import jwt
 import uuid
 import logging
 
-ACCESS_TOKEN_EXPIRY = 3600
+ACCESS_TOKEN_EXPIRY = 30
 passwd_context = CryptContext(schemes=["bcrypt"])
 
 
@@ -25,7 +25,7 @@ def create_acces_token(
     payload = {}
     payload["user"] = user_data
     payload["exp"] = datetime.now() + (
-        expiry if expiry is not None else timedelta(seconds=ACCESS_TOKEN_EXPIRY)
+        expiry if expiry is not None else timedelta(days=ACCESS_TOKEN_EXPIRY)
     )
     payload["jti"] = str(uuid.uuid4())
     payload["refresh"] = refresh

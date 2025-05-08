@@ -35,4 +35,4 @@ app.include_router(car_router, prefix=f"/api/{version}/car", tags=["car"])
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=False)

@@ -3,7 +3,7 @@ from http.client import ACCEPTED
 import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.schemas import USerCreateModel, UserModel, USerLogginModel, UserProductsModel
+from src.schemas import USerCreateModel, UserModel, USerLogginModel,UserLoginResponse,UserResponse
 from src.services.user_service import UserService
 from src.db.dbConnect import get_session
 from src.utils import create_acces_token, verify_password
@@ -16,7 +16,7 @@ auth_router = APIRouter()
 user_service = UserService()
 role_checker = RoleChecker(['admin','user'])
 
-REFRESH_TOKEN_EXPIRY = 2
+REFRESH_TOKEN_EXPIRY = 180
 
 
 @auth_router.post(
@@ -37,7 +37,7 @@ async def create_user_Account(
     return new_user
 
 
-@auth_router.post("/login")
+@auth_router.post("/login",response_model = UserLoginResponse,status_code = status.HTTP_200_OK)
 async def login_users(
     login_data: USerLogginModel, session: AsyncSession = Depends(get_session)
 ):
@@ -60,14 +60,15 @@ async def login_users(
                 expiry=timedelta(days=REFRESH_TOKEN_EXPIRY),
             )
 
-            return JSONResponse(
-                content={
-                    "message": "Login succcesful ",
-                    "acces_token": acces_token,
-                    "refresh_token": refresh_token,
-                    "user": {"email": user.email, "uid": str(user.uid)},
-                }
-            )
+            response = UserLoginResponse(message = "Login successfull",
+                                        access_token =  acces_token,
+                                        refresh_token = refresh_token,
+                                        user = UserResponse(email = user.email,
+                                                            username = user.username,
+                                                            uid = user.uid))
+
+
+            return response
     raise InvalidCredentials()
 
 

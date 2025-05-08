@@ -9,6 +9,7 @@ from sqlmodel import select
 import shutil
 import os
 from src.errors import CarNotFound
+from sqlalchemy.dialects.postgresql import insert
 
 UPLOAD_FOLDER = "static"
 
@@ -22,20 +23,22 @@ class CarService:
 
 		return new_car
 
-	async def synchronize_data(self,data:List[CreateCarModel],session):
-		data_dict = [
-			Car(
-				**{
-				**item.model_dump(),
-				"car_year": int(item.car_year)
-				}
-			) 
-			for item in data
-		]
-		
-		session.add_all(data_dict)
-		await session.commit();
+	async def synchronize_data(self, data: List[CreateCarModel], session):
+		for item in data:
+			item_dict = item.model_dump()
+			item_dict["car_year"] = int(item.car_year)
 
+			stmt = insert(Car).values(**item_dict)
+
+			
+			stmt = stmt.on_conflict_do_update(
+				index_elements=["uid"],
+				set_=item_dict  
+			)
+
+			await session.execute(stmt)
+
+		await session.commit()
 		
 	async def set_car_image(self,image:UploadFile,car_uid:str,session):
 		statement= select(Car).where(Car.uid == car_uid);
@@ -56,7 +59,7 @@ class CarService:
 		await session.commit()
 
 	async def get_all_cars(self,user_uid:str,session):
-		statement = select(Car).where(Car.user_uid == user_uid)
+		statement = select(Car).where(Car.user_uid == int(user_uid))
 
 		result = await session.exec(statement)
 
