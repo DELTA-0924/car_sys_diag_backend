@@ -1,14 +1,14 @@
 from typing import List
 from fastapi import APIRouter,Depends, UploadFile,status,File,Form
 from src.dependencies import AccessTokenBearer
-from src.schemas import CarModel,CreateCarModel,CreateCarModelSync
+from src.schemas import CarModel,CreateCarModel,CreateCarModelSync,ResponseContact
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.dbConnect import get_session
 from src.services.car_service import CarService
 from src.errors import (
     CarNotFound
     )
-
+STATIC_URL_PREFIX = "http://192.168.1.5:8000/"
 
 car_router = APIRouter()
 car_service = CarService()
@@ -28,25 +28,34 @@ async def get_cars(session:AsyncSession = Depends(get_session),
                    token_details = Depends(acces_token_bearer)):
     user_uid = token_details.get("user")["user_uid"]
     cars = await car_service.get_all_cars(user_uid,session)
+    
+
     if cars is not None:
+        for car in cars:
+            car.car_image_path = STATIC_URL_PREFIX+car.car_image_path.replace("\\","/")
         return cars
     else :
         raise CarNotFound()
 
-@car_router.post("/sync",status_code = status.HTTP_201_CREATED)
+@car_router.post("/sync",response_model = ResponseContact)
 async def synchronize_data_car(data:List[CreateCarModelSync],
-                               user_details = acces_token_bearer,
+                               user_details =Depends(acces_token_bearer),
                                session: AsyncSession = Depends(get_session)
                                ):
     await car_service.synchronize_data(data,session)
 
-    return status.HTTP_201_CREATED
+    response = ResponseContact(status_code = str(status.HTTP_200_OK),detail = "Sync was succesfully")
+
+    return  response
 
 
-@car_router.post("/upload-image")
-async def upload_image(car_uid:str = Form(...),image:UploadFile = File(...),session:AsyncSession = Depends(get_session)):
-    
+@car_router.post("/upload-image",response_model = ResponseContact,status_code = status.HTTP_201_CREATED)
+async def upload_image(images:List[UploadFile] = File(...),session:AsyncSession = Depends(get_session),user_details = Depends(acces_token_bearer)):
+    for img in images:
+        print("Received:", img.filename)
 
-    await car_service.set_car_image(image,car_uid,session);
+    await car_service.set_car_image_bulk(images,session)
 
-    return status.HTTP_200_OK
+    response = ResponseContact(status_code = str(status.HTTP_200_OK),detail = "upload-image was succesfully")
+
+    return response

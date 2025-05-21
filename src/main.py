@@ -8,10 +8,24 @@ from src.api.routes.car_routes import car_router
 
 from .errors import register_all_errors
 from .middleware import register_middleware
+import os
+import subprocess
+
+redis_path = "D:\\programs\\redis\\redis-server.exe"
+
 
 @asynccontextmanager
 async def life_span(app: FastAPI):
     print(f"server is starting...")
+    if not os.path.exists(redis_path):
+        print(f"❌ Файл не найден: {redis_path}")
+    else:
+        try:
+            print("🚀 Запуск Redis-сервера...")
+            subprocess.Popen(redis_path)
+            print("✅ Redis запущен.")
+        except Exception as e:
+            print(f"⚠️ Ошибка запуска: {e}")
     await init_db()
     yield
     print(f"server has been stopped")
@@ -24,6 +38,8 @@ app = FastAPI(
     version=version,
     lifespan=life_span
 )
+
+
 
 
 register_all_errors(app)

@@ -54,6 +54,7 @@ class CreateCarModel(BaseModel):
     car_model:str = Field(max_length=20)
     car_mark:str = Field(max_length=20)    
     car_year:str = Field(max_length=10)
+    car_image_path:Optional[str] = None   
 
 class CreateCarModelSync(CreateCarModel):
     uid:int
@@ -63,3 +64,11 @@ class UpdateCarModel(BaseModel):
     mark:str = Field(max_length=20)    
     year:str = Field(max_length=10)
 
+
+class ResponseContact(BaseModel):
+    status_code:str
+    detail:str
+    
+
+class EmailModel(BaseModel):
+    addresses:List[str]

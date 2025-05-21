@@ -36,4 +36,4 @@ class Car(SQLModel,table=True):
     car_year:int
     issueBroken:str = Field(nullable=True)
     user_uid:Optional[int] = Field(default = None,sa_column = Column(pg.BIGINT,ForeignKey("users.uid",ondelete = "CASCADE"),nullable = True))
-    car_image_path:str| None = None
+    car_image_path:str| None = None    
