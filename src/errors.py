@@ -70,6 +70,11 @@ class AccountNotVerified(Exception):
     """Account not yet verified"""
     pass
 
+
+class SensorNotFound(Exception):
+    """Sensor not found"""
+    pass
+
 def create_exception_handler(
     status_code: int, initial_detail: Any
 ) -> Callable[[Request, Exception], JSONResponse]:
@@ -178,6 +183,17 @@ def register_all_errors(app: FastAPI):
             },
         ),
     )
+    app.add_exception_handler(
+        SensorNotFound,
+        create_exception_handler(
+            status_code=status.HTTP_404_NOT_FOUND,
+            initial_detail={
+                "status_code":"Sensor_not_found",
+                "detail": "Sensor not found",
+            },
+        ),
+    )
+
 
     @app.exception_handler(500)
     async def internal_server_error(request, exc):

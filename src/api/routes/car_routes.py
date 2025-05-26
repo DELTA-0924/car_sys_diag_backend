@@ -1,7 +1,9 @@
+from msilib.schema import Media
 from typing import List
-from fastapi import APIRouter,Depends, UploadFile,status,File,Form
+from fastapi import APIRouter,Depends, UploadFile,status,File,Form,Response
+from fastapi.responses import JSONResponse
 from src.dependencies import AccessTokenBearer
-from src.schemas import CarModel,CreateCarModel,CreateCarModelSync,ResponseContact
+from src.schemas import CarCreateResponse, CarModel,CreateCarModel,CreateCarModelSync,ResponseContact
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.dbConnect import get_session
 from src.services.car_service import CarService
@@ -16,12 +18,15 @@ acces_token_bearer = AccessTokenBearer()
 
 
 
-@car_router .post("/",response_model=CarModel,status_code = status.HTTP_201_CREATED)
-async def create_car(car_data:CreateCarModel,session:AsyncSession = Depends(get_session)):
-
-   new_car = await car_service.create_car(car_data,session)
+@car_router.post("/",status_code = status.HTTP_201_CREATED)
+async def create_car(car_data:CreateCarModelSync,session:AsyncSession = Depends(get_session)):
    
-   return new_car
+   ids=  await car_service.create_car(car_data,session)  
+
+   return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content=ids
+    )
 
 @car_router .get("/",response_model = List[CarModel])
 async def get_cars(session:AsyncSession = Depends(get_session),
@@ -37,15 +42,15 @@ async def get_cars(session:AsyncSession = Depends(get_session),
     else :
         raise CarNotFound()
 
-@car_router.post("/sync",response_model = ResponseContact)
+@car_router.post("/sync",response_model = CarCreateResponse)
 async def synchronize_data_car(data:List[CreateCarModelSync],
                                user_details =Depends(acces_token_bearer),
                                session: AsyncSession = Depends(get_session)
                                ):
-    await car_service.synchronize_data(data,session)
+    ids_result = await car_service.synchronize_data(data,session)
 
-    response = ResponseContact(status_code = str(status.HTTP_200_OK),detail = "Sync was succesfully")
-
+    response = CarCreateResponse(status_code = str(status.HTTP_200_OK),detail = "Sync was succesfully",ids = ids_result)
+    print(ids_result)
     return  response
 
 

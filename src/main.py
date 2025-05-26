@@ -5,13 +5,17 @@ from src.db.dbConnect import init_db
 from src.api.routes.auth_routes import auth_router
 from fastapi.staticfiles import StaticFiles
 from src.api.routes.car_routes import car_router
-
+from src.api.routes.sensor_routes import sensor_router
 from .errors import register_all_errors
 from .middleware import register_middleware
+
 import os
 import subprocess
 
+
 redis_path = "D:\\programs\\redis\\redis-server.exe"
+
+
 
 
 @asynccontextmanager
@@ -40,14 +44,13 @@ app = FastAPI(
 )
 
 
-
-
 register_all_errors(app)
 register_middleware(app)
 
 app.include_router(auth_router, prefix=f"/api/{version}/auth", tags=["auth"])
 
 app.include_router(car_router, prefix=f"/api/{version}/car", tags=["car"])
+app.include_router(sensor_router, prefix=f"/api/{version}/sensor", tags=["sensors"])
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":

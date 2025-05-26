@@ -60,3 +60,8 @@ media/
 
 # __init__.pyc files, optional
 **/__init__.pyc
+
+#machine learnings models
+ml_models
+
+.vs/

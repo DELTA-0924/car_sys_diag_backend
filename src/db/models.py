@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     uid: int = Field(
            sa_column=Column(pg.BIGINT, primary_key=True, nullable=False)
     )
+    
     username: str
     email: str
     role:str = Field(sa_column=Column(pg.VARCHAR,nullable=False,server_default="user"))
@@ -31,9 +32,28 @@ class Car(SQLModel,table=True):
     uid:int = Field(
            sa_column=Column(pg.BIGINT, primary_key=True, nullable=False)
     )
+    temp_uid:int = Field(nullable = False)
     car_model:str
     car_mark:str
     car_year:int
     issueBroken:str = Field(nullable=True)
     user_uid:Optional[int] = Field(default = None,sa_column = Column(pg.BIGINT,ForeignKey("users.uid",ondelete = "CASCADE"),nullable = True))
     car_image_path:str| None = None    
+
+
+class Sensor(SQLModel,table=True):
+       __tablename__ = "sensors"
+       uid:int  = Field(
+              sa_column = Column(pg.BIGINT,primary_key = True, nullable = False)
+       )
+       coolant_temp:float
+       rpm:float
+       fuel_consumption:float
+       generator_voltage:float
+       maf:float
+       iat:float
+       tps:float
+       speed:float
+       timing_advance:float
+       short_term_fuel_trim:float
+       car_uid:int =Field(sa_column = Column(pg.BIGINT,ForeignKey("cars.uid",ondelete = "CASCADE"),nullable = True))

@@ -57,7 +57,9 @@ class CreateCarModel(BaseModel):
     car_image_path:Optional[str] = None   
 
 class CreateCarModelSync(CreateCarModel):
-    uid:int
+    uid:Optional[int] =None
+    temp_uid:int
+
 
 class UpdateCarModel(BaseModel):
     model:str = Field(max_length=20)
@@ -69,6 +71,34 @@ class ResponseContact(BaseModel):
     status_code:str
     detail:str
     
+class IdMapping(BaseModel):
+    temp_id:int
+    new_id:int
+
+class CarCreateResponse(ResponseContact):
+    ids:list[IdMapping]
+
+
 
 class EmailModel(BaseModel):
     addresses:List[str]
+
+
+class SensorModel(BaseModel):       
+       coolant_temp:str
+       rpm:str
+       fuel_consumption:str
+       generator_voltage:str
+       maf:str
+       iat:str
+       tps:str
+       speed:str
+       timing_advance:str
+       short_term_fuel_trim:str
+       car_uid:int
+
+class PredictionResponse(BaseModel):
+    status_code:str
+    detail:str
+    issue_broken:str
+    km_to_failure:str

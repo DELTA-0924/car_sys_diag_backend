@@ -4,7 +4,7 @@ import uuid
 import aiofiles
 from fastapi import UploadFile,HTTPException
 from src.db.models import Car
-from src.schemas import CarModel, CreateCarModel
+from src.schemas import CarModel, CreateCarModel, CreateCarModelSync, IdMapping
 from sqlmodel import select
 import shutil
 import os
@@ -16,14 +16,20 @@ UPLOAD_FOLDER = "static"
 class CarService:
 	async def create_car(self,car_data:CreateCarModel,session):
 		car_data_dict=car_data.model_dump();
-		new_car=Car(**car_data_dict);
-		new_car.car_year = datetime.strptime(new_car.car_year, "%Y")
+		car_data_dict["car_year"] = int(car_data.car_year)
+		
+		new_car=Car(**car_data_dict);		
 		session.add(new_car)
+
+		await session.flush()
+		new_id = new_car.uid
+		temp_id = new_car.temp_uid
 		await session.commit()
+		ids:IdMapping = {"temp_id":temp_id,"new_id":new_id}
+		return ids
 
-		return new_car
-
-	async def synchronize_data(self, data: List[CreateCarModel], session):
+	async def synchronize_data(self, data: List[CreateCarModelSync], session):
+		ids:IdMapping = []
 		for item in data:
 			item_dict = item.model_dump()
 			item_dict["car_year"] = int(item.car_year)
@@ -32,13 +38,20 @@ class CarService:
 
 			
 			stmt = stmt.on_conflict_do_update(
+
 				index_elements=["uid"],
 				set_=item_dict  
-			)
+			).returning(Car.temp_uid, Car.uid)
 
-			await session.execute(stmt)
 
+			result =await session.execute(stmt)
+
+			temp_id,new_id= result.fetchone()
+
+			ids.append({"temp_id":temp_id,"new_id":new_id})
+	
 		await session.commit()
+		return ids
 		
 	async def set_car_image(self,images:List[UploadFile],car_uid:str,session):
 
