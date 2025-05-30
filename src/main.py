@@ -31,6 +31,7 @@ async def life_span(app: FastAPI):
         except Exception as e:
             print(f"⚠️ Ошибка запуска: {e}")
     await init_db()
+
     yield
     print(f"server has been stopped")
 

@@ -1,8 +1,10 @@
+from argparse import ONE_OR_MORE
 from datetime import datetime
 from typing import List
 import uuid
 import aiofiles
 from fastapi import UploadFile,HTTPException
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.models import Car
 from src.schemas import CarModel, CreateCarModel, CreateCarModelSync, IdMapping
 from sqlmodel import select
@@ -14,10 +16,20 @@ from sqlalchemy.dialects.postgresql import insert
 UPLOAD_FOLDER = "static"
 
 class CarService:
-	async def create_car(self,car_data:CreateCarModel,session):
+	async def create_car(self,car_data:CreateCarModelSync,session):
 		car_data_dict=car_data.model_dump();
 		car_data_dict["car_year"] = int(car_data.car_year)
-		
+		carId = car_data_dict['temp_uid']
+		result = await session.exec(
+		(select(Car).where(Car.uid == int(carId))))
+
+		car =result.one_or_none()
+
+		if car is not None:
+			ids:IdMapping = {"temp_id":car.temp_uid,"new_id":car.uid}
+			return ids
+
+
 		new_car=Car(**car_data_dict);		
 		session.add(new_car)
 
@@ -32,6 +44,10 @@ class CarService:
 		ids:IdMapping = []
 		for item in data:
 			item_dict = item.model_dump()
+
+			if item_dict.get("uid") is None:
+				item_dict.pop("uid", None)
+
 			item_dict["car_year"] = int(item.car_year)
 
 			stmt = insert(Car).values(**item_dict)
@@ -105,7 +121,7 @@ class CarService:
 				car.car_image_path = file_path
 
 			except CarNotFound:
-				raise CarNotFound
+				raise CarNotFound()
 			except Exception as e:
 				print("type of exception " ,type(e),e.args,sep='\t')
 				raise HTTPException(status_code=500, detail="Item not found")
@@ -123,3 +139,17 @@ class CarService:
 
 		return cars if cars is not None else None
 
+	async def setIssueProblem(self,predict_data:dict,carId,session:AsyncSession):
+		 
+		result = await session.exec(
+			(select(Car).where(Car.uid == int(carId))))
+
+		car =result.one_or_none()
+
+		if car is None:
+			raise CarNotFound()
+
+		car.issueBroken = predict_data['issue_broken'];
+
+		await session.commit()
+	

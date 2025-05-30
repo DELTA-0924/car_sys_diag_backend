@@ -9,6 +9,7 @@ def register_middleware(app:FastAPI):
     async def custom_logging(request:Request,call_next):
         start_time = time.time()
         print("before",start_time)
+        print(request.body)
         response = await call_next(request)
         processing_time = time.time() - start_time;
         print("after",processing_time)

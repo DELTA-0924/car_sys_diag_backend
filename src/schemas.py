@@ -55,6 +55,7 @@ class CreateCarModel(BaseModel):
     car_mark:str = Field(max_length=20)    
     car_year:str = Field(max_length=10)
     car_image_path:Optional[str] = None   
+    issueBroken:Optional[str] = None
 
 class CreateCarModelSync(CreateCarModel):
     uid:Optional[int] =None

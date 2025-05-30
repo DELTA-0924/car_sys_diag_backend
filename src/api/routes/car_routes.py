@@ -7,10 +7,11 @@ from src.schemas import CarCreateResponse, CarModel,CreateCarModel,CreateCarMode
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.dbConnect import get_session
 from src.services.car_service import CarService
+from src.config import Config
 from src.errors import (
     CarNotFound
     )
-STATIC_URL_PREFIX = "http://192.168.1.5:8000/"
+STATIC_URL_PREFIX = Config.STATIC_URL_PREFIX
 
 car_router = APIRouter()
 car_service = CarService()
@@ -21,9 +22,11 @@ acces_token_bearer = AccessTokenBearer()
 @car_router.post("/",status_code = status.HTTP_201_CREATED)
 async def create_car(car_data:CreateCarModelSync,session:AsyncSession = Depends(get_session)):
    
-   ids=  await car_service.create_car(car_data,session)  
+    if car_data.user_uid == 9999:
+       car_data.user_uid = None
+    ids =  await car_service.create_car(car_data,session)  
 
-   return JSONResponse(
+    return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content=ids
     )
@@ -50,14 +53,13 @@ async def synchronize_data_car(data:List[CreateCarModelSync],
     ids_result = await car_service.synchronize_data(data,session)
 
     response = CarCreateResponse(status_code = str(status.HTTP_200_OK),detail = "Sync was succesfully",ids = ids_result)
-    print(ids_result)
+
     return  response
 
 
 @car_router.post("/upload-image",response_model = ResponseContact,status_code = status.HTTP_201_CREATED)
 async def upload_image(images:List[UploadFile] = File(...),session:AsyncSession = Depends(get_session),user_details = Depends(acces_token_bearer)):
-    for img in images:
-        print("Received:", img.filename)
+
 
     await car_service.set_car_image_bulk(images,session)
 
