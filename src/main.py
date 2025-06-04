@@ -52,7 +52,7 @@ app.include_router(auth_router, prefix=f"/api/{version}/auth", tags=["auth"])
 
 app.include_router(car_router, prefix=f"/api/{version}/car", tags=["car"])
 app.include_router(sensor_router, prefix=f"/api/{version}/sensor", tags=["sensors"])
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/api/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=4200, reload=False)
