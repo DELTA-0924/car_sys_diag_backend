@@ -1,7 +1,7 @@
 from pathlib import Path
 import joblib
 import os
-from config import Config
+from src.config import Config
 if Config.Mode == "develop":
     BASE_DIR = Path(__file__).resolve().parent.parent
 
