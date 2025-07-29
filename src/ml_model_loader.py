@@ -2,7 +2,7 @@ from pathlib import Path
 import joblib
 import os
 from src.config import Config
-model1 ="test stage"
+model ="test stage"
 model2 ="test stage"
 if Config.Mode == "develop":
     BASE_DIR = Path(__file__).resolve().parent.parent
