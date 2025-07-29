@@ -55,7 +55,8 @@ coverage.xml
 .python-version
 
 # Static/media files (optional)
-static/
+static/*
+!static/.gitkeep
 media/
 
 # __init__.pyc files, optional

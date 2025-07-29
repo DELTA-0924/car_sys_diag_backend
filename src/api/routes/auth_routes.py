@@ -165,7 +165,7 @@ async def verify_user(token:str,session:AsyncSession =Depends(get_session)):
         if not user:
             raise UserNotFound()
 
-        await user_service.update_user(user,{"is_verified":True},session)
+        await user_service.update_user(user,{"is_confirmed":True},session)
 
         result = ResponseContact(status_code=str(status.HTTP_200_OK),detail ="Account verified successfully ")
 
