@@ -2,6 +2,7 @@ from  src.schemas import PredictionResponse, SensorModel
 from sqlmodel import select
 from src.errors import CarNotFound, SensorNotFound
 from src.db.models import Car, Sensor
+from src.config import Config
 from src.ml_model_loader import model,model2
 from sqlalchemy import desc
 import pandas as pd
@@ -66,18 +67,19 @@ class SensorService():
         print("DataFrame",df.head(),sep="\n")
 
         
-        
-        prediction1 = model.predict(df)
-        prediction2 = model2.predict(df)
-        issueBroken = prediction1[0]
-        km_to_failure = int(prediction2[0])
-        print(issueBroken)
-        print(km_to_failure)
+        if Config.Mode =="develop":
+            prediction1 = model.predict(df)
+            prediction2 = model2.predict(df)
+            issueBroken = prediction1[0]
+            km_to_failure = int(prediction2[0])
+            print(issueBroken)
+            print(km_to_failure)
 
-        response_dict={"issue_broken":issueBroken,"km_to_failure":str(km_to_failure)}
+            response_dict={"issue_broken":issueBroken,"km_to_failure":str(km_to_failure)}
 
-        return  response_dict
-
+            return  response_dict
+        response_dict={"issue_broken":"test stage","km_to_failure":"test Stage"}
+        return response_dict
         
     
     def estimate_speed(self,rpm):
