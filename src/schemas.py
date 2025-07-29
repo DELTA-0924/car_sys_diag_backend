@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,EmailStr
 from datetime import datetime, date
 import uuid
 
@@ -8,9 +8,9 @@ import uuid
 
 
 class USerCreateModel(BaseModel):        
-    username: str = Field(max_lenght=8)
-    email: str = Field(max_lenght=40)
-    password: str = Field(min_lenght=6)
+    username: str = Field(max_length=8)
+    email:EmailStr
+    password: str = Field(min_length=6)
 
 
 class UserModel(BaseModel):

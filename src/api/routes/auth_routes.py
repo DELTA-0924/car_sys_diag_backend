@@ -35,7 +35,7 @@ async def  send_email(emails:EmailModel):
         body=html
     )
 
-    await mail.send_message(message)
+    #await mail.send_message(message)
 
     result = ResponseContact(status_code=str(status.HTTP_200_OK),detail ='send eamil successfuly')
 
@@ -72,7 +72,7 @@ async def create_user_Account(
         body=html_message
     )
 
-    #await mail.send_message(message)
+    await mail.send_message(message)
 
     result = ResponseContact(status_code=str(status.HTTP_200_OK),detail ='User created successfully, please email to verify your account')
 
@@ -140,8 +140,8 @@ async def revoke_token(token_details:dict = Depends(AccessTokenBearer())):
         status_code=status.HTTP_200_OK
         )
 
-@auth_router.get('/me',response_model=UserModel)
-async def get_current_user(
+@auth_router.get('/me',response_model=UserModel,status_code=200)
+async def get_user(
     user = Depends(get_current_user),
     _:bool = Depends(role_checker)
     ): 
